@@ -260,6 +260,9 @@ function ProductList({ onHomeClick }) {
     const handleAddToCart = (product) => {
         dispatch(addItem(product));
         setAddedToCart((prevState) => ({ ...prevState, [product.name]: true, }))
+        if (addedToCart) {
+            product.backgroundColor = "grey";
+        }
     }
 
     return (
