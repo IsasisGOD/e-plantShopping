@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 import "./ProductList.css";
 import CartItem from "./CartItem";
 import { useDispatch } from "react-redux";
@@ -7,6 +8,7 @@ function ProductList({ onHomeClick }) {
   const [showCart, setShowCart] = useState(false);
   const [showPlants, setShowPlants] = useState(false);
   const [addedToCart, setAddedToCart] = useState({});
+  const [buttonColor, setButtonColor] = useState("green");
   const dispatch = useDispatch();
   const plantsArray = [
     {
@@ -282,24 +284,24 @@ function ProductList({ onHomeClick }) {
   };
   const handlePlantsClick = (e) => {
     e.preventDefault();
+    showPlants;
+
     setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
     setShowCart(false); // Hide the cart when navigating to About Us
   };
 
   const handleAddToCart = (product) => {
-    dispatch(addItem(product));
+    if (addedToCart[product.name] === true) {
+      setButtonColor("grey");
+    } else {
+      dispatch(addItem(product));
+    }
     setAddedToCart((prevState) => ({ ...prevState, [product.name]: true }));
   };
 
-  const handleAddedItem = (product) => {
-    const buttonStyle = {
-      backgroundColor: "green",
-    };
-
-    addedToCart[product.name] ? buttonStyle.backgroundColor = "grey" : buttonStyle.backgroundColor = "green";
-    return buttonStyle;
+  const buttonStyle = (style) => {
+    style.backgroundColor = buttonColor;
   };
-
   const handleContinueShopping = (e) => {
     e.preventDefault();
     setShowCart(false);
@@ -376,7 +378,7 @@ function ProductList({ onHomeClick }) {
                     <button
                       className="product-button"
                       onClick={() => handleAddToCart(item)}
-                      style={handleAddedItem(item)}
+                      style={buttonStyle(item)}
                     >
                       Add to Cart
                     </button>
@@ -392,5 +394,9 @@ function ProductList({ onHomeClick }) {
     </div>
   );
 }
+
+ProductList.propTypes = {
+  onHomeClick: PropTypes.func.isRequired,
+};
 
 export default ProductList;
