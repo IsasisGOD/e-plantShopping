@@ -2,14 +2,16 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import "./ProductList.css";
 import CartItem from "./CartItem";
-import { useDispatch } from "react-redux";
-import { addItem } from "../Redux/CartSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, updateQuantity, selectCartItems, selectTotalItems } from "../Redux/CartSlice";
+
 function ProductList({ onHomeClick }) {
   const [showCart, setShowCart] = useState(false);
   const [showPlants, setShowPlants] = useState(false);
-  const [addedToCart, setAddedToCart] = useState({});
-  const [buttonColor, setButtonColor] = useState("green");
+
   const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems);
+  const totalItems = useSelector(selectTotalItems);
   const plantsArray = [
     {
       category: "Air Purifying Plants",
@@ -284,28 +286,28 @@ function ProductList({ onHomeClick }) {
   };
   const handlePlantsClick = (e) => {
     e.preventDefault();
-    showPlants;
-
     setShowPlants(true); // Set showAboutUs to true when "About Us" link is clicked
     setShowCart(false); // Hide the cart when navigating to About Us
   };
 
-  const handleAddToCart = (product) => {
-    if (addedToCart[product.name] === true) {
-      setButtonColor("grey");
-    } else {
-      dispatch(addItem(product));
-    }
-    setAddedToCart((prevState) => ({ ...prevState, [product.name]: true }));
+  const handleStyleButton = (product) => {
+    const isInCart = cartItems.some(item => item.name === product.name);
+    return {
+      backgroundColor: isInCart ? "grey" : "green",
+      content: isInCart ? "Added" : "Add to Cart"
+    };
   };
 
-  const buttonStyle = (style) => {
-    style.backgroundColor = buttonColor;
+  const handleAddToCart = (product) => {
+    dispatch(addItem(product));
+    dispatch(updateQuantity({ name: product.name, quantity: product.quantity = 1 }));
   };
+
   const handleContinueShopping = (e) => {
     e.preventDefault();
     setShowCart(false);
   };
+
   return (
     <div>
       <div className="navbar" style={styleObj}>
@@ -345,15 +347,17 @@ function ProductList({ onHomeClick }) {
                   <circle cx="80" cy="216" r="12"></circle>
                   <circle cx="184" cy="216" r="12"></circle>
                   <path
-                    d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8"
+                    d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H12"
                     fill="none"
-                    stroke="#faf9f9"
+                    stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="2"
-                    id="mainIconPathAttribute"
+                    strokeWidth="12"
                   ></path>
                 </svg>
+                {totalItems > 0 && (
+                  <span style={{ position: "absolute", top: "39px", right: "38px" }} className="cart-count">{totalItems}</span>
+                )}
               </h1>
             </a>
           </div>
@@ -377,10 +381,10 @@ function ProductList({ onHomeClick }) {
                     <p className="product-description">{item.description}</p>
                     <button
                       className="product-button"
+                      style={handleStyleButton(item)}
                       onClick={() => handleAddToCart(item)}
-                      style={buttonStyle(item)}
                     >
-                      Add to Cart
+                      {handleStyleButton(item).content}
                     </button>
                   </div>
                 ))}
